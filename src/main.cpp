@@ -20,6 +20,19 @@ const int constOpenMill = 5000;
 uint32_t openMill     =0;
 
 
+void concUpAttach() {
+  digitalWrite(releUpPin,   LOW);
+  digitalWrite(releDownPin, LOW);
+  motion=2;
+}
+
+void concDownAttach() {
+  digitalWrite(releUpPin,   LOW);
+  digitalWrite(releDownPin, LOW);
+  motion=2;
+}
+
+
 void setup() {
 
     Wire.begin();
@@ -116,14 +129,3 @@ void loop() {
   }
 }
 
-void concUpAttach() {
-  digitalWrite(releUpPin,   LOW);
-  digitalWrite(releDownPin, LOW);
-  motion=2;
-}
-
-void concDownAttach() {
-  digitalWrite(releUpPin,   LOW);
-  digitalWrite(releDownPin, LOW);
-  motion=2;
-}
