@@ -19,6 +19,8 @@ const int constRange  =550;
 const int constOpenMill = 5000;
 uint32_t openMill     =0;
 
+uint32_t printMill    =0;
+
 
 void concUpAttach() {
   digitalWrite(releUpPin,   LOW);
@@ -34,7 +36,7 @@ void concDownAttach() {
 
 
 void setup() {
-
+  Serial.begin(9600);
     Wire.begin();
 
   sensor.init();
@@ -45,8 +47,8 @@ void setup() {
   // ms (e.g. sensor.startContinuous(100)).
   sensor.startContinuous();
 
-  pinMode(concDownPin, INPUT);//2
-  pinMode(concUpPin,   INPUT);//3
+  pinMode(concDownPin, INPUT_PULLUP);//2
+  pinMode(concUpPin,   INPUT_PULLUP);//3
 
   attachInterrupt(0, concUpAttach,   FALLING); //2
   attachInterrupt(1, concDownAttach, FALLING); //3
@@ -57,6 +59,21 @@ void setup() {
 }
 
 void loop() {
+
+  if(millis()-printMill>1000){
+    printMill=millis();
+    //Serial.print(sensor.readRangeSingleMillimeters());
+
+    Serial.print(digitalRead(concUpPin));
+    //Serial.print(" ");
+    Serial.print(digitalRead(concDownPin));
+
+    if (sensor.timeoutOccurred())
+    {
+      Serial.print(" TIMEOUT");
+    }
+    Serial.println();
+  }
 
     range = sensor.readRangeSingleMillimeters();
 
