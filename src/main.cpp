@@ -5,6 +5,7 @@
 #include <VL53L0X.h>
 VL53L0X sensor;
 
+const int ledPin      =13;
 const int releUpPin   = 4;
 const int releDownPin = 5;
 const int concDownPin = 2; // прерывание 0   2
@@ -12,7 +13,6 @@ const int concUpPin   = 3; // прерывание 1   3
 
 volatile int  motion  =4;
 bool open             =false;
-int cycle             =0;
 
 int range             =0;
 const int constRange  =550;
@@ -20,6 +20,12 @@ const int constOpenMill = 5000;
 uint32_t openMill     =0;
 
 uint32_t printMill    =0;
+
+uint32_t timeUpOld=0, timeDownOld=0, timeUpNew=0, timeDownNew=0, mill=0;
+bool timeFlagUp=false, timeFlagDown=false;
+uint32_t timeOpen=0, timeClose=0;
+bool protect=false;
+
 
 
 void concUpAttach() {
@@ -55,26 +61,33 @@ void setup() {
 
   pinMode(releUpPin,   OUTPUT);
   pinMode(releDownPin, OUTPUT);
+  pinMode(ledPin,      OUTPUT);
 
 }
 
 void loop() {
-
+/*
   if(millis()-printMill>1000){
     printMill=millis();
-    //Serial.print(sensor.readRangeSingleMillimeters());
-
+    Serial.print(sensor.readRangeSingleMillimeters());
+    Serial.print("  up ");
     Serial.print(digitalRead(concUpPin));
-    //Serial.print(" ");
+    Serial.print("  down ");
     Serial.print(digitalRead(concDownPin));
-
+    Serial.print("  open ");
+    Serial.print(open);
+    Serial.print("  RU ");
+    Serial.print(digitalRead(releUpPin));
+    Serial.print("  RD ");
+    Serial.print(digitalRead(releDownPin));
+   
     if (sensor.timeoutOccurred())
     {
       Serial.print(" TIMEOUT");
     }
     Serial.println();
   }
-
+*/
     range = sensor.readRangeSingleMillimeters();
 
   if (range < constRange)
@@ -95,31 +108,30 @@ void loop() {
 
 
   if(digitalRead(concUpPin)==HIGH && digitalRead(concDownPin)==HIGH){ // оба отжаты
+
     if(open==true){
-      if     (releUpPin==HIGH){}
-      else if(releDownPin==HIGH){motion=1;}
-      else if(releUpPin==LOW && releDownPin==LOW && cycle<5){
-        digitalWrite(releUpPin, HIGH);
-        delay(200);
-        cycle++;
-        digitalWrite(releUpPin, LOW);
-        delay(1000);
-      }
+      if     (digitalRead(releUpPin)==HIGH){}
+      else if(digitalRead(releDownPin)==HIGH){motion=1;}
+      else if(digitalRead(releUpPin)==LOW && digitalRead(releDownPin)==LOW){motion=1;}
     }
     else{
-      if     (releUpPin==HIGH){}
-      else if(releDownPin==HIGH){}
+      if     (digitalRead(releUpPin)==HIGH){}
+      else if(digitalRead(releDownPin)==HIGH){}
+      else if(digitalRead(releUpPin)==LOW && digitalRead(releDownPin)==LOW){}
     }
   } 
   else if(digitalRead(concUpPin)==LOW  && digitalRead(concDownPin)==HIGH){ // открыта крышка
-    if(open==true){motion=2; cycle=0;}
+
+    if(open==true){motion=2;}
     else{motion=3;}
   }
   else if(digitalRead(concUpPin)==HIGH && digitalRead(concDownPin)==LOW ){ // закрыта крышка
+
     if(open==true){motion=1;}
     else{motion=2;}
   }
   else if(digitalRead(concUpPin)==LOW  && digitalRead(concDownPin)==LOW ){ // оба нажаты
+
     if(open==true){}
     else{}
   }
@@ -127,7 +139,7 @@ void loop() {
 
   switch (motion) {
     case 1: //вверх
-      digitalWrite(releUpPin,   HIGH);
+      if(protect==false)digitalWrite(releUpPin,   HIGH);
       digitalWrite(releDownPin, LOW );
       motion=4;
       break;
@@ -138,11 +150,43 @@ void loop() {
       break;
     case 3: //вниз
       digitalWrite(releUpPin,   LOW );
-      digitalWrite(releDownPin, HIGH);
+      if(protect==false)digitalWrite(releDownPin, HIGH);
       motion=4;
       break;
     case 4: //ожидание
       break;
   }
+if (digitalRead(releUpPin)==HIGH && timeFlagUp==false){
+  timeFlagUp=true;
+  timeUpOld=millis();
+}
+if (digitalRead(releUpPin)==LOW && timeFlagUp==true){
+  timeFlagUp=false;
+  timeUpNew=millis();
+  timeOpen=timeUpNew-timeUpOld;
+  Serial.print("timeOpen ");
+  Serial.println(timeOpen);
+}
+
+if (digitalRead(releDownPin)==HIGH && timeFlagDown==false){
+  timeFlagDown=true;
+  timeDownOld=millis();
+}
+if (digitalRead(releDownPin)==LOW && timeFlagDown==true){
+  timeFlagDown=false;
+  timeDownNew=millis();
+  timeClose=timeDownNew-timeDownOld;
+  Serial.print("timeClose ");
+  Serial.println(timeClose);
+}
+
+/*mill=millis();
+if(mill-timeDownOld>1200 && digitalRead(releDownPin)==HIGH){
+  digitalWrite(ledPin, HIGH);
+  digitalWrite(releUpPin,   LOW);
+  digitalWrite(releDownPin, LOW);
+  protect=true;
+}*/
+
 }
 
