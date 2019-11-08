@@ -24,7 +24,12 @@ uint32_t printMill    =0;
 uint32_t timeUpOld=0, timeDownOld=0, timeUpNew=0, timeDownNew=0, mill=0;
 bool timeFlagUp=false, timeFlagDown=false;
 uint32_t timeOpen=0, timeClose=0;
+
 bool protect=false;
+bool ledState=false;
+uint32_t blinkMill=0;
+const int timeProtect=1160;  // защита через..
+const int blinkDelay=125;    // частота моргания при протесте
 
 
 
@@ -156,37 +161,56 @@ void loop() {
     case 4: //ожидание
       break;
   }
-if (digitalRead(releUpPin)==HIGH && timeFlagUp==false){
-  timeFlagUp=true;
-  timeUpOld=millis();
-}
-if (digitalRead(releUpPin)==LOW && timeFlagUp==true){
-  timeFlagUp=false;
-  timeUpNew=millis();
-  timeOpen=timeUpNew-timeUpOld;
-  Serial.print("timeOpen ");
-  Serial.println(timeOpen);
-}
 
-if (digitalRead(releDownPin)==HIGH && timeFlagDown==false){
-  timeFlagDown=true;
-  timeDownOld=millis();
-}
-if (digitalRead(releDownPin)==LOW && timeFlagDown==true){
-  timeFlagDown=false;
-  timeDownNew=millis();
-  timeClose=timeDownNew-timeDownOld;
-  Serial.print("timeClose ");
-  Serial.println(timeClose);
-}
+  
+  if (digitalRead(releUpPin)==HIGH && timeFlagUp==false){
+    timeFlagUp=true;
+    timeUpOld=millis();
+  }
+  if (digitalRead(releUpPin)==LOW && timeFlagUp==true){
+    timeFlagUp=false;
+    timeUpNew=millis();
+    timeOpen=timeUpNew-timeUpOld;
+    Serial.print("timeOpen ");
+    Serial.println(timeOpen);
+  }
+  mill=millis();
+  if(mill-timeUpOld>timeProtect && timeFlagUp==true){
+    timeFlagUp=false;
+    digitalWrite(releUpPin,   LOW);
+    digitalWrite(releDownPin, LOW);
+    protect=true;
+    Serial.print("PROTECT open ");
+    Serial.print(millis()-timeUpOld);
+  }
 
-/*mill=millis();
-if(mill-timeDownOld>1200 && digitalRead(releDownPin)==HIGH){
-  digitalWrite(ledPin, HIGH);
-  digitalWrite(releUpPin,   LOW);
-  digitalWrite(releDownPin, LOW);
-  protect=true;
-}*/
+  if (digitalRead(releDownPin)==HIGH && timeFlagDown==false){
+    timeFlagDown=true;
+    timeDownOld=millis();
+  }
+  if (digitalRead(releDownPin)==LOW && timeFlagDown==true){
+    timeFlagDown=false;
+    timeDownNew=millis();
+    timeClose=timeDownNew-timeDownOld;
+    Serial.print("timeClose ");
+    Serial.println(timeClose);
+  }
+  mill=millis();
+  if(mill-timeDownOld>timeProtect && timeFlagDown==true){
+    timeFlagDown=false;
+    digitalWrite(releUpPin,   LOW);
+    digitalWrite(releDownPin, LOW);
+    protect=true;
+    Serial.print("PROTECT close ");
+    Serial.print(millis()-timeDownOld);
+  }
+  mill=millis();
+  if(protect==true && mill-blinkMill>blinkDelay){
+    blinkMill=millis();
+    ledState= !ledState;
+    digitalWrite(ledPin, ledState);
+  }
+
 
 }
 
