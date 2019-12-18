@@ -1,6 +1,6 @@
 // Urna-4.0
 #include <Arduino.h>
-
+#include <avr/wdt.h> //вачдог
 #include <Wire.h>
 #include <VL53L0X.h>
 VL53L0X sensor;
@@ -67,10 +67,11 @@ void setup() {
   pinMode(releUpPin,   OUTPUT);
   pinMode(releDownPin, OUTPUT);
   pinMode(ledPin,      OUTPUT);
-
+  wdt_enable(WDTO_8S);  // вачдог
 }
 
 void loop() {
+  wdt_reset();  // вачдог
 /*
   if(millis()-printMill>1000){
     printMill=millis();
