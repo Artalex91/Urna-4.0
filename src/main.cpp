@@ -15,7 +15,7 @@ volatile int  motion  =4;
 bool open             =false;
 
 int range             =0;
-const int constRange  =550;
+const int constRange  =600;
 const int constOpenMill = 5000;
 uint32_t openMill     =0;
 
@@ -71,10 +71,10 @@ void setup() {
 }
 
 void loop() {
-  wdt_reset();  // вачдог
-/*
+  
   if(millis()-printMill>1000){
     printMill=millis();
+    /*
     Serial.print(sensor.readRangeSingleMillimeters());
     Serial.print("  up ");
     Serial.print(digitalRead(concUpPin));
@@ -86,14 +86,19 @@ void loop() {
     Serial.print(digitalRead(releUpPin));
     Serial.print("  RD ");
     Serial.print(digitalRead(releDownPin));
-   
+   */
     if (sensor.timeoutOccurred())
     {
-      Serial.print(" TIMEOUT");
+      Serial.print("  TIMEOUT");
     }
-    Serial.println();
+    else 
+    {
+      //Serial.print("  no TIMEOUT");
+      wdt_reset();  // вачдог
+    }
+    //Serial.println();
   }
-*/
+
     range = sensor.readRangeSingleMillimeters();
 
   if (range < constRange)
