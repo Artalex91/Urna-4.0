@@ -28,7 +28,7 @@ uint32_t timeOpen=0, timeClose=0;
 bool protect=false;
 bool ledState=false;
 uint32_t blinkMill=0;
-const int timeProtect=1160;  // защита через..
+const int timeProtect=1200;  // защита через..
 const int blinkDelay=125;    // частота моргания при протесте
 
 
