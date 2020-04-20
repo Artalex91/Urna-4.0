@@ -16,7 +16,7 @@ bool open             =false;
 
 int range             =0;
 const int constRange  =600;
-const int constOpenMill = 5000;
+const int constOpenMill = 10000;  // время пока открыто
 uint32_t openMill     =0;
 
 uint32_t printMill    =0;
@@ -31,6 +31,28 @@ uint32_t blinkMill=0;
 const int timeProtect=1200;  // защита через..
 const int blinkDelay=125;    // частота моргания при протесте
 
+// для медианного фильтра
+int val[3] = {1000, 1000, 1000};
+byte index;
+
+
+// медианный фильтр из 3ёх значений
+int middle_of_3(int a, int b, int c) {
+  int middle;
+  if ((a <= b) && (a <= c)) {
+    middle = (b <= c) ? b : c;
+  }
+  else {
+    if ((b <= a) && (b <= c)) {
+      middle = (a <= c) ? a : c;
+    }
+    else {
+      middle = (a <= b) ? a : b;
+    }
+  }
+  return middle;
+}
+//-----------------------------------
 
 
 void concUpAttach() {
@@ -99,8 +121,16 @@ void loop() {
     //Serial.println();
   }
 
-    range = sensor.readRangeSingleMillimeters();
+    //range = sensor.readRangeSingleMillimeters();  // при работе без фильтра
 
+// медианный фильтр
+ if (++index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
+  val[index] = sensor.readRangeSingleMillimeters(); // записываем значение с датчика в массив
+  // фильтровать медианным фильтром из 3ёх ПОСЛЕДНИХ измерений
+  range = middle_of_3(val[0], val[1], val[2]);
+ // if (range < 8190) Serial.println(range); // для примера выводим в порт
+//------------------------------
+ if (index == 2){
   if (range < constRange)
     openMill = millis();
   if (range < constRange && open != true)
@@ -114,7 +144,7 @@ void loop() {
       open = false;
     }
   }
-
+ }
 
 
 
