@@ -1,4 +1,6 @@
 // Urna-4.0
+// 29.04.20 увеличел высоту с 600 до 800 и отредактировал медианый фильтр
+
 #include <Arduino.h>
 #include <avr/wdt.h> //вачдог
 #include <Wire.h>
@@ -15,7 +17,7 @@ volatile int  motion  =4;
 bool open             =false;
 
 int range             =0;
-const int constRange  =600;
+const int constRange  =800;
 const int constOpenMill = 10000;  // время пока открыто
 uint32_t openMill     =0;
 
@@ -127,7 +129,7 @@ void loop() {
  if (++index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
   val[index] = sensor.readRangeSingleMillimeters(); // записываем значение с датчика в массив
   // фильтровать медианным фильтром из 3ёх ПОСЛЕДНИХ измерений
-  range = middle_of_3(val[0], val[1], val[2]);
+  if (index == 2) range = middle_of_3(val[0], val[1], val[2]);
  // if (range < 8190) Serial.println(range); // для примера выводим в порт
 //------------------------------
  if (index == 2){
