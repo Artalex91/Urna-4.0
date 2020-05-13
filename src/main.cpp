@@ -1,5 +1,5 @@
 // Urna-4.0
-// 29.04.20 увеличел высоту с 600 до 800 и отредактировал медианый фильтр
+// 12.05.20 увеличел время до защиты
 
 #include <Arduino.h>
 #include <avr/wdt.h> //вачдог
@@ -16,7 +16,7 @@ const int concUpPin   = 3; // прерывание 1   3
 volatile int  motion  =4;
 bool open             =false;
 
-int range             =0;
+int range             =1000;
 const int constRange  =800;
 const int constOpenMill = 10000;  // время пока открыто
 uint32_t openMill     =0;
@@ -30,8 +30,8 @@ uint32_t timeOpen=0, timeClose=0;
 bool protect=false;
 bool ledState=false;
 uint32_t blinkMill=0;
-const int timeProtect=1200;  // защита через..
-const int blinkDelay=125;    // частота моргания при протесте
+const int timeProtect=1400;  // защита через..
+const int blinkDelay=500;    // частота моргания при протесте
 
 // для медианного фильтра
 int val[3] = {1000, 1000, 1000};
@@ -129,7 +129,16 @@ void loop() {
  if (++index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
   val[index] = sensor.readRangeSingleMillimeters(); // записываем значение с датчика в массив
   // фильтровать медианным фильтром из 3ёх ПОСЛЕДНИХ измерений
-  if (index == 2) range = middle_of_3(val[0], val[1], val[2]);
+  if (index == 2){
+     range = middle_of_3(val[0], val[1], val[2]);
+     if (range < 8190){
+     Serial.print(val[0]);
+     Serial.print("  ");
+     Serial.print(val[1]);
+     Serial.print("  ");
+     Serial.println(val[2]);
+     }
+  }
  // if (range < 8190) Serial.println(range); // для примера выводим в порт
 //------------------------------
  if (index == 2){
