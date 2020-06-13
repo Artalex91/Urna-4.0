@@ -30,7 +30,7 @@ uint32_t timeOpen=0, timeClose=0;
 bool protect=false;
 bool ledState=false;
 uint32_t blinkMill=0;
-const int timeProtect=2000;  // защита через..
+const int timeProtect=1500;  // защита через..
 const int blinkDelay=500;    // частота моргания при протесте
 
 // для медианного фильтра
