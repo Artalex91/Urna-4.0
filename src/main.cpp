@@ -1,4 +1,5 @@
-// Urna-4.0
+// Urna-4.1
+// 23.06.21 изменена логика wachdog
 // 12.05.20 увеличел время до защиты
 
 #include <Arduino.h>
@@ -71,6 +72,8 @@ void concDownAttach() {
 
 
 void setup() {
+  wdt_disable();
+  Serial.print("Setup");
   Serial.begin(9600);
     Wire.begin();
 
@@ -91,11 +94,11 @@ void setup() {
   pinMode(releUpPin,   OUTPUT);
   pinMode(releDownPin, OUTPUT);
   pinMode(ledPin,      OUTPUT);
-  wdt_enable(WDTO_8S);  // вачдог
+  wdt_enable(WDTO_1S);  // вачдог
 }
 
 void loop() {
-  
+  if (val[0]>0 || val[1]>0 || val[2]>0) wdt_reset();
   if(millis()-printMill>1000){
     printMill=millis();
     /*
@@ -110,7 +113,7 @@ void loop() {
     Serial.print(digitalRead(releUpPin));
     Serial.print("  RD ");
     Serial.print(digitalRead(releDownPin));
-   */
+   
     if (sensor.timeoutOccurred())
     {
       Serial.print("  TIMEOUT");
@@ -119,7 +122,7 @@ void loop() {
     {
       //Serial.print("  no TIMEOUT");
       wdt_reset();  // вачдог
-    }
+    }*/
     //Serial.println();
   }
 
